@@ -7,3 +7,7 @@ h1 {
   font-size: 72px;
   color: #4ddab9;;
 }
+
+.loading-status {
+  text-align: center;
+}

@@ -1,46 +1,53 @@
 import React, {Component} from 'react';
 import {CardList} from './components/card-list/card-list.component.jsx';
 import {SearchBox} from './components/search-box/search-box.component';
-
+import {connect} from "react-redux";
+import {requestMonsters, setSearchField} from "./redux/actions";
 import './App.css';
 
-class App extends Component {
-  constructor() {
-    super();
 
-    this.state = {
-      monsters: [],
-      searchField: '',
-    };
+const mapStateToProps = (state) => {
+  return {
+    searchField: state.searchMonsters.searchField,
+    isPending: state.requestMonsters.isPending,
+    monsters: state.requestMonsters.monsters,
+    error: state.requestMonsters.error,
   }
+};
 
-  handleChange = (e) => {
-    this.setState({searchField: e.target.value});
-  };
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestMonsters: () => dispatch(requestMonsters())
+  }
+};
 
+
+class App extends Component {
   componentDidMount() {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(response => response.json())
-      .then(users => this.setState({monsters: users}));
+    this.props.onRequestMonsters();
   }
 
   render() {
-    const {monsters, searchField} = this.state;
+    const {searchField, onSearchChange , monsters, isPending} = this.props;
     const filteredMonsters = monsters.filter(monster => {
       return monster.name.toLowerCase().includes(searchField.toLowerCase());
     });
 
-    return (
-      <div className="App">
-        <h1>Monsters Rolodex</h1>
-        <SearchBox placeholder='search monster'
-                   handleChange={this.handleChange}
-        />
+    return isPending ?
+      <h1 className='loading-status'>Loading</h1> :
+      (
+        <div className="App">
+          <h1>Monsters Rolodex</h1>
+          <SearchBox placeholder='search monster'
+                     handleChange={onSearchChange}
+          />
 
-        <CardList monsters={filteredMonsters}/>
-      </div>
-    );
+          <CardList monsters={filteredMonsters}/>
+        </div>
+      );
   }
 }
 
-export default App;
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
